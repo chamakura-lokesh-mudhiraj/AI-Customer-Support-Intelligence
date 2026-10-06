@@ -27,3 +27,8 @@ OPENAI_MODEL = os.getenv(
     "OPENAI_MODEL",
     "gpt-6-luna",
 )
+
+OPENAI_EMBEDDING_MODEL = os.getenv(
+    "OPENAI_EMBEDDING_MODEL",
+    "text-embedding-3-small",
+)

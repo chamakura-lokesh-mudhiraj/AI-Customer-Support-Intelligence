@@ -1,8 +1,10 @@
 import json
+import time
 
 from openai import OpenAI
 
 from app.config import OPENAI_API_KEY, OPENAI_MODEL
+from app.models.analysis import TicketAnalysis
 from app.models.classification import TicketClassification
 from app.models.ticket import Ticket
 
@@ -43,7 +45,7 @@ sentiment
 """
 
 
-def classify_ticket(ticket: Ticket) -> TicketClassification:
+def classify_ticket(ticket: Ticket) -> TicketAnalysis:
     prompt = f"""
 Customer support ticket:
 
@@ -54,12 +56,22 @@ Message:
 {ticket.message}
 """
 
+    start_time = time.perf_counter()
+
     response = client.responses.create(
         model=OPENAI_MODEL,
         instructions=SYSTEM_PROMPT,
         input=prompt,
     )
 
+    elapsed_ms = (time.perf_counter() - start_time) * 1000
+
     result = json.loads(response.output_text)
 
-    return TicketClassification.model_validate(result)
+    classification = TicketClassification.model_validate(result)
+
+    return TicketAnalysis(
+        classification=classification,
+        model=OPENAI_MODEL,
+        processing_time_ms=round(elapsed_ms, 2),
+    )

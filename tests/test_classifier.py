@@ -1,5 +1,5 @@
+from app.models.analysis import TicketAnalysis
 from app.models.ticket import Ticket
-from app.models.classification import TicketClassification
 from app.services import classifier
 
 
@@ -31,7 +31,9 @@ def test_classify_ticket(monkeypatch):
 
     result = classifier.classify_ticket(ticket)
 
-    assert isinstance(result, TicketClassification)
-    assert result.category == "authentication"
-    assert result.priority == "high"
-    assert result.sentiment == "negative"
+    assert isinstance(result, TicketAnalysis)
+    assert result.classification.category == "authentication"
+    assert result.classification.priority == "high"
+    assert result.classification.sentiment == "negative"
+    assert result.model
+    assert result.processing_time_ms >= 0

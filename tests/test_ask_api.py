@@ -39,3 +39,86 @@ def test_ask_question(monkeypatch):
     )
 
     assert data["sources"] == ["refund_policy.txt"]
+
+def test_ask_question_with_no_relevant_knowledge(monkeypatch):
+    def fake_answer_question(question):
+        assert question == "What is the weather today?"
+
+        return RAGResponse(
+            answer=(
+                "The available knowledge base does not contain "
+                "enough information to answer this question."
+            ),
+            sources=[],
+        )
+
+    monkeypatch.setattr(
+        ask,
+        "answer_question",
+        fake_answer_question,
+    )
+
+    response = client.post(
+        "/ask/",
+        json={
+            "question": "What is the weather today?"
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["answer"] == (
+        "The available knowledge base does not contain "
+        "enough information to answer this question."
+    )
+
+    assert data["sources"] == []
+
+
+def test_ask_question_with_multiple_sources(monkeypatch):
+    def fake_answer_question(question):
+        assert question == (
+            "I think someone accessed my account."
+        )
+
+        return RAGResponse(
+            answer=(
+                "Change your password immediately and "
+                "contact customer support."
+            ),
+            sources=[
+                "account_security.txt",
+                "password_reset.txt",
+            ],
+        )
+
+    monkeypatch.setattr(
+        ask,
+        "answer_question",
+        fake_answer_question,
+    )
+
+    response = client.post(
+        "/ask/",
+        json={
+            "question": (
+                "I think someone accessed my account."
+            )
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["answer"] == (
+        "Change your password immediately and "
+        "contact customer support."
+    )
+
+    assert data["sources"] == [
+        "account_security.txt",
+        "password_reset.txt",
+    ]

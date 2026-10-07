@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.api.tickets import router as tickets_router
+from app.api.ask import router as ask_router
 
 
 app = FastAPI(
@@ -18,3 +19,4 @@ def root():
 
 
 app.include_router(tickets_router)
+app.include_router(ask_router)

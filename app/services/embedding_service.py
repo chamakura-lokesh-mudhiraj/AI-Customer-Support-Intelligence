@@ -1,20 +1,18 @@
-from openai import OpenAI
-
-from app.config import OPENAI_API_KEY, OPENAI_EMBEDDING_MODEL
+from sentence_transformers import SentenceTransformer
 
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+MODEL_NAME = "all-MiniLM-L6-v2"
+
+model = SentenceTransformer(MODEL_NAME)
 
 
 def create_embedding(text: str) -> list[float]:
-    """Create an embedding for a single piece of text."""
     if not text.strip():
         raise ValueError("Text cannot be empty.")
 
-    response = client.embeddings.create(
-        model=OPENAI_EMBEDDING_MODEL,
-        input=text,
-        encoding_format="float",
+    embedding = model.encode(
+        text,
+        convert_to_numpy=True,
     )
 
-    return response.data[0].embedding
+    return embedding.tolist()

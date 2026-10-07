@@ -7,9 +7,7 @@ from app.models.document import DocumentContent
 
 
 def load_pdf(file_path: str) -> str:
-    """Extract text from a PDF file."""
     reader = PdfReader(file_path)
-
     pages = []
 
     for page in reader.pages:
@@ -22,9 +20,7 @@ def load_pdf(file_path: str) -> str:
 
 
 def load_docx(file_path: str) -> str:
-    """Extract text from a DOCX file."""
     document = Document(file_path)
-
     paragraphs = []
 
     for paragraph in document.paragraphs:
@@ -36,23 +32,37 @@ def load_docx(file_path: str) -> str:
     return "\n".join(paragraphs).strip()
 
 
+def load_txt(file_path: str) -> str:
+    path = Path(file_path)
+
+    return path.read_text(
+        encoding="utf-8",
+    ).strip()
+
+
 def load_document(file_path: str) -> DocumentContent:
-    """Load a supported document and return structured content."""
     path = Path(file_path)
 
     if not path.exists():
-        raise FileNotFoundError(f"Document not found: {file_path}")
+        raise FileNotFoundError(
+            f"Document not found: {file_path}"
+        )
 
     suffix = path.suffix.lower()
 
     if suffix == ".pdf":
         text = load_pdf(file_path)
+
     elif suffix == ".docx":
         text = load_docx(file_path)
+
+    elif suffix == ".txt":
+        text = load_txt(file_path)
+
     else:
         raise ValueError(
             f"Unsupported document type: {suffix}. "
-            "Supported types are .pdf and .docx."
+            "Supported types are .pdf, .docx, and .txt."
         )
 
     return DocumentContent(

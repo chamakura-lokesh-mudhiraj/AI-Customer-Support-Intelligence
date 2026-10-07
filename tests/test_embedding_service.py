@@ -1,43 +1,35 @@
-from unittest.mock import Mock, patch
+from unittest.mock import patch
+
+import numpy as np
+import pytest
 
 from app.services.embedding_service import create_embedding
 
 
 def test_create_embedding():
-    fake_response = Mock()
-
-    fake_response.data = [
-        Mock(
-            embedding=[
-                0.1,
-                0.2,
-                0.3,
-                0.4,
-            ]
-        )
-    ]
+    fake_embedding = np.array(
+        [
+            0.1,
+            0.2,
+            0.3,
+            0.4,
+        ]
+    )
 
     with patch(
-        "app.services.embedding_service.client.embeddings.create",
-        return_value=fake_response,
-    ) as mock_create:
-        embedding = create_embedding(
-            "Customers can request a refund within thirty days."
-        )
+        "app.services.embedding_service.model.encode",
+        return_value=fake_embedding,
+    ) as mock_encode:
+        embedding = create_embedding("Test customer support ticket")
 
     assert embedding == [0.1, 0.2, 0.3, 0.4]
 
-    mock_create.assert_called_once_with(
-        model="text-embedding-3-small",
-        input="Customers can request a refund within thirty days.",
-        encoding_format="float",
+    mock_encode.assert_called_once_with(
+        "Test customer support ticket",
+        convert_to_numpy=True,
     )
 
 
 def test_create_embedding_rejects_empty_text():
-    try:
+    with pytest.raises(ValueError, match="Text cannot be empty"):
         create_embedding("")
-
-        assert False
-    except ValueError as exc:
-        assert "Text cannot be empty." in str(exc)

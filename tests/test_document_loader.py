@@ -55,3 +55,20 @@ def test_load_document_returns_metadata(tmp_path: Path):
     assert document_content.file_type == "docx"
     assert "Refund policy" in document_content.text
     assert document_content.character_count == len(document_content.text)
+
+def test_load_txt(tmp_path):
+    file_path = tmp_path / "refund_policy.txt"
+
+    file_path.write_text(
+        "Customers can request a refund within 30 days.",
+        encoding="utf-8",
+    )
+
+    document = load_document(str(file_path))
+
+    assert document.filename == "refund_policy.txt"
+    assert document.file_type == "txt"
+    assert document.text == (
+        "Customers can request a refund within 30 days."
+    )
+    assert document.character_count == len(document.text)

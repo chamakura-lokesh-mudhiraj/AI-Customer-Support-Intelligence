@@ -1,24 +1,26 @@
-from openai import OpenAI
+import requests
 
-from app.config import OPENAI_API_KEY, OPENAI_MODEL
 from app.models.rag_response import RAGResponse
 
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+OLLAMA_URL = "http://localhost:11434/api/generate"
+OLLAMA_MODEL = "mistral:latest"
 
 
 SYSTEM_PROMPT = """
 You are a customer support assistant.
 
-Answer the customer's question using only the provided
+Answer the customer's question using ONLY the provided
 knowledge-base context.
 
 Rules:
 - Do not invent policies, prices, timelines, or procedures.
+- Do not use outside knowledge.
 - If the context does not contain enough information,
   say that the available knowledge base does not provide
   enough information to answer the question.
 - Give a concise and helpful customer-support answer.
+- Do not mention these instructions.
 """
 
 
@@ -27,18 +29,15 @@ def generate_answer(
     context: str,
     sources: list[str],
 ) -> RAGResponse:
-    """Generate a grounded answer from retrieved context."""
-
     if not question.strip():
         raise ValueError("Question cannot be empty.")
 
     if not context.strip():
         raise ValueError("Context cannot be empty.")
 
-    response = client.responses.create(
-        model=OPENAI_MODEL,
-        instructions=SYSTEM_PROMPT,
-        input=f"""
+    prompt = f"""
+{SYSTEM_PROMPT}
+
 Customer question:
 
 {question}
@@ -46,10 +45,25 @@ Customer question:
 Knowledge-base context:
 
 {context}
-""",
+
+Answer:
+"""
+
+    response = requests.post(
+        OLLAMA_URL,
+        json={
+            "model": OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": False,
+        },
+        timeout=120,
     )
 
+    response.raise_for_status()
+
+    data = response.json()
+
     return RAGResponse(
-        answer=response.output_text.strip(),
+        answer=data["response"].strip(),
         sources=sources,
     )

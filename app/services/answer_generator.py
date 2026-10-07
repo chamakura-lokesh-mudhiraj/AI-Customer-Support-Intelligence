@@ -19,7 +19,11 @@ Rules:
 - If the context does not contain enough information,
   say that the available knowledge base does not provide
   enough information to answer the question.
-- Give a concise and helpful customer-support answer.
+- Answer only what the customer asked.
+- Keep the answer to 1 to 3 sentences.
+- Do not add unrelated information from the context.
+- Use the exact facts from the knowledge base.
+- Write naturally with correct spacing and punctuation.
 - Do not mention these instructions.
 """
 

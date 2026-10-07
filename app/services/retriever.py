@@ -2,7 +2,8 @@ from app.services.embedding_service import create_embedding
 from app.services.vector_store import VectorStore
 
 
-RELEVANCE_DISTANCE_THRESHOLD = 1.5
+MAX_DISTANCE = 1.5
+MAX_DISTANCE_RATIO = 1.25
 
 
 def retrieve_relevant_chunks(
@@ -31,10 +32,19 @@ def retrieve_relevant_chunks(
     if not distances:
         return results
 
+    best_distance = min(distances)
+
+    max_allowed_distance = (
+        best_distance * MAX_DISTANCE_RATIO
+    )
+
     relevant_indexes = [
         index
         for index, distance in enumerate(distances)
-        if distance <= RELEVANCE_DISTANCE_THRESHOLD
+        if (
+            distance <= MAX_DISTANCE
+            and distance <= max_allowed_distance
+        )
     ]
 
     results["documents"] = [

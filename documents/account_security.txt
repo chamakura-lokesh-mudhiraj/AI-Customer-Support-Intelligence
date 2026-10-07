@@ -1,0 +1,11 @@
+Account Security Policy
+
+Customers should never share their account password with another person.
+
+If a customer believes their account has been compromised, they should change their password immediately and contact customer support.
+
+Customers should use a strong, unique password for their account.
+
+Support representatives will never ask customers to provide their complete account password.
+
+Suspicious account activity may require additional identity verification.

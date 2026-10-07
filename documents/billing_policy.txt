@@ -1,0 +1,11 @@
+Billing Policy
+
+Customers are charged when an order is successfully placed.
+
+A billing receipt is sent to the email address associated with the customer account.
+
+If a customer believes they were charged incorrectly, they should contact customer support with their order number and billing details.
+
+Duplicate charges should be reported to customer support for investigation.
+
+Billing corrections may require additional verification before they can be processed.

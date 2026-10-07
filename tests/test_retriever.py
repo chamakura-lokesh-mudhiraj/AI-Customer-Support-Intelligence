@@ -96,3 +96,60 @@ def test_retrieve_relevant_chunks_filters_irrelevant_results():
     assert result["metadatas"] == [[]]
     assert result["ids"] == [[]]
     assert result["distances"] == [[]]
+
+def test_retrieve_relevant_chunks_filters_weak_results():
+    fake_results = {
+        "ids": [[
+            "account_security.txt-0",
+            "password_reset.txt-0",
+            "billing_policy.txt-0",
+        ]],
+        "documents": [[
+            "Account security content",
+            "Password reset content",
+            "Billing content",
+        ]],
+        "metadatas": [[
+            {
+                "filename": "account_security.txt",
+                "chunk_id": 0,
+            },
+            {
+                "filename": "password_reset.txt",
+                "chunk_id": 0,
+            },
+            {
+                "filename": "billing_policy.txt",
+                "chunk_id": 0,
+            },
+        ]],
+        "distances": [[1.054, 1.289, 1.450]],
+    }
+
+    fake_vector_store = Mock()
+    fake_vector_store.search.return_value = fake_results
+
+    with patch(
+        "app.services.retriever.create_embedding",
+        return_value=[0.1, 0.2],
+    ):
+        result = retrieve_relevant_chunks(
+            question="I think someone accessed my account.",
+            vector_store=fake_vector_store,
+        )
+
+    assert result["metadatas"] == [[
+        {
+            "filename": "account_security.txt",
+            "chunk_id": 0,
+        },
+        {
+            "filename": "password_reset.txt",
+            "chunk_id": 0,
+        },
+    ]]
+
+    assert result["documents"] == [[
+        "Account security content",
+        "Password reset content",
+    ]]

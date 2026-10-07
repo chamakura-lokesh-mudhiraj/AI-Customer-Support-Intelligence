@@ -72,3 +72,55 @@ def test_answer_question(tmp_path, monkeypatch):
     )
 
     assert result.sources == ["refund_policy.txt"]
+
+def test_answer_question_returns_only_relevant_sources(monkeypatch):
+    monkeypatch.setattr(
+        "app.services.rag_service.retrieve_relevant_chunks",
+        lambda question, vector_store, n_results: {
+            "documents": [
+                [
+                    "If your account is compromised, change your password immediately.",
+                    "Use the password reset option on the sign-in page.",
+                ]
+            ],
+            "metadatas": [
+                [
+                    {
+                        "filename": "account_security.txt",
+                        "chunk_id": 0,
+                    },
+                    {
+                        "filename": "password_reset.txt",
+                        "chunk_id": 0,
+                    },
+                ]
+            ],
+        },
+    )
+
+    monkeypatch.setattr(
+        "app.services.rag_service.generate_answer",
+        lambda question, context, sources: RAGResponse(
+            answer=(
+                "Change your password immediately and "
+                "contact customer support."
+            ),
+            sources=sources,
+        ),
+    )
+
+    result = answer_question(
+        question="I think someone accessed my account.",
+        vector_store=None,
+        n_results=3,
+    )
+
+    assert result.answer == (
+        "Change your password immediately and "
+        "contact customer support."
+    )
+
+    assert result.sources == [
+        "account_security.txt",
+        "password_reset.txt",
+    ]
